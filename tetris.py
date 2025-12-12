@@ -29,6 +29,14 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                if mino_x > 0:
+                    mino_x -= 1
+            elif event.key == pygame.K_RIGHT:
+                if mino_x < COLS - 1:
+                    mino_x += 1
+
     # --- 描画 ---
     screen.fill((0, 0, 0))
 

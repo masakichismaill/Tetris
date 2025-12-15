@@ -38,6 +38,12 @@ def can_move(mino_x, mino_y, cells, board, ROWS, COLS):
     return True
 
 
+# 回転関数
+def rotate_cw(cells):
+    # ClockWise(時計回り)
+    return [(-dy, dx) for dx, dy in cells]
+
+
 # 固定する関数
 def lock_to_board(mino_x, mino_y, cells, board):
     for dx, dy in cells:
@@ -88,11 +94,15 @@ while running:
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
-                if mino_x > 0:
+                if can_move(mino_x - 1, mino_y, mino_cells, board, ROWS, COLS):
                     mino_x -= 1
             elif event.key == pygame.K_RIGHT:
-                if mino_x < COLS - 1:
+                if can_move(mino_x + 1, mino_y, mino_cells, board, ROWS, COLS):
                     mino_x += 1
+            elif event.key == pygame.K_UP:
+                rotated = rotate_cw(mino_cells)
+                if can_move(mino_x, mino_y, rotated, board, ROWS, COLS):
+                    mino_cells = rotated
 
     # --- ② 時間更新（dt） ---
     dt = clock.tick(FPS)  # 前フレームからの経過ms

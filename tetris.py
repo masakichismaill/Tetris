@@ -46,12 +46,29 @@ def lock_to_board(mino_x, mino_y, cells, board):
         board[y][x] = 1  # board[y][x] = 1 はそこにブロックがあるという意味
 
 
-# ミノをリセットする関数
+# ミノをリセットする関数。新規のミノの形成
 def spawn_mino():
-    x = COLS // 2
+    x = COLS // 2  # ミノの初期座標
     y = 0
     cells = [(0, 0), (0, 1), (0, 2), (0, 3)]
     return x, y, cells
+
+
+# 行が埋まっているかの判定
+# 行消し＝＞配列の削除＋上に空行を追加
+def clear_lines(board, ROWS, COLS):
+    new_board = []
+    cleared = 0
+
+    for r in range(ROWS):
+        if 0 not in board[r]:
+            cleared += 1  # 消えた行を数える
+        else:
+            new_board.append(board[r])
+    # 消えた行の数だけ、上に空行を足す
+    for _ in range(cleared):
+        new_board.insert(0, [0] * COLS)
+    return new_board, cleared
 
 
 pygame.init()
@@ -88,9 +105,9 @@ while running:
             mino_y += 1
         else:
             # 着地：盤面に固定
-            lock_to_board(mino_x, mino_y, mino_cells, board)
-            # 新しいミノを作る
-            mino_x, mino_y, mino_cells = spawn_mino()
+            lock_to_board(mino_x, mino_y, mino_cells, board)  # 固定
+            board, _ = clear_lines(board, ROWS, COLS)  # 行消し
+            mino_x, mino_y, mino_cells = spawn_mino()  # 新しいミノを作る
         # 行けないなら止める（今回は固定まではしない）
         fall_timer = 0
 

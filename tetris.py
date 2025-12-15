@@ -20,6 +20,9 @@ fall_interval = 500  # 500msごとに落下
 fall_timer = 0  # 溜まった時間
 
 
+# ------------------
+# 　関数群
+# ------------------
 # 衝突判定関数
 def can_move(mino_x, mino_y, cells, board, ROWS, COLS):
     for dx, dy in cells:
@@ -33,6 +36,22 @@ def can_move(mino_x, mino_y, cells, board, ROWS, COLS):
         if board[ny][nx] != 0:
             return False
     return True
+
+
+# 固定する関数
+def lock_to_board(mino_x, mino_y, cells, board):
+    for dx, dy in cells:
+        x = mino_x + dx
+        y = mino_y + dy
+        board[y][x] = 1  # board[y][x] = 1 はそこにブロックがあるという意味
+
+
+# ミノをリセットする関数
+def spawn_mino():
+    x = COLS // 2
+    y = 0
+    cells = [(0, 0), (0, 1), (0, 2), (0, 3)]
+    return x, y, cells
 
 
 pygame.init()
@@ -67,6 +86,11 @@ while running:
         # １マス下に行けるか？
         if can_move(mino_x, mino_y + 1, mino_cells, board, ROWS, COLS):
             mino_y += 1
+        else:
+            # 着地：盤面に固定
+            lock_to_board(mino_x, mino_y, mino_cells, board)
+            # 新しいミノを作る
+            mino_x, mino_y, mino_cells = spawn_mino()
         # 行けないなら止める（今回は固定まではしない）
         fall_timer = 0
 
@@ -79,6 +103,9 @@ while running:
             x = MARGIN + c * CELL
             y = MARGIN + r * CELL
             rect = pygame.Rect(x, y, CELL, CELL)
+            # 固定ブロックがあれば塗る
+            if board[r][c] == 1:
+                pygame.draw.rect(screen, (200, 200, 200), rect)
             pygame.draw.rect(screen, (40, 40, 40), rect, 1)
 
     # ミノ

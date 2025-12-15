@@ -1,3 +1,4 @@
+from tkinter.tix import ROW
 import pygame
 
 # --- 初期設定 ---
@@ -15,8 +16,24 @@ mino_y = 0
 mino_cells = [(0, 0), (0, 1), (0, 2), (0, 3)]  # 縦のIミノ
 
 # 落下の設定
-fall_interval = 500  # ms
-fall_timer = 0
+fall_interval = 500  # 500msごとに落下
+fall_timer = 0  # 溜まった時間
+
+
+# 衝突判定関数
+def can_move(mino_x, mino_y, cells, board, ROWS, COLS):
+    for dx, dy in cells:
+        # nx,ny:次の位置(next x/y)
+        nx = mino_x + dx
+        ny = mino_y + dy
+        # 盤面の外に出るならNG
+        if not (0 <= nx < COLS and 0 <= ny < ROWS):
+            return False
+        # 盤面にブロックがあるならNG（今回はまだ全部0なので将来用）
+        if board[ny][nx] != 0:
+            return False
+    return True
+
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -47,7 +64,10 @@ while running:
 
     # --- ③ 落下判定（毎フレーム） ---
     if fall_timer >= fall_interval:
-        mino_y += 1
+        # １マス下に行けるか？
+        if can_move(mino_x, mino_y + 1, mino_cells, board, ROWS, COLS):
+            mino_y += 1
+        # 行けないなら止める（今回は固定まではしない）
         fall_timer = 0
 
     # --- ④ 描画 ---

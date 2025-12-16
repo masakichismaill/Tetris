@@ -127,6 +127,8 @@ while running:
             lock_to_board(mino_x, mino_y, mino_cells, board)  # 固定
             board, _ = clear_lines(board, ROWS, COLS)  # 行消し
             mino_x, mino_y, mino_cells = spawn_mino()  # 新しいミノを作る
+            if not can_move(mino_x, mino_y, mino_cells, board, ROWS, COLS):
+                running = False
         # 行けないなら止める（今回は固定まではしない）
         fall_timer = 0
 

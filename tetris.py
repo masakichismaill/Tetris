@@ -1,4 +1,3 @@
-from tkinter.tix import ROW
 import pygame
 
 # --- 初期設定 ---
@@ -77,6 +76,16 @@ def clear_lines(board, ROWS, COLS):
     return new_board, cleared
 
 
+# 回転＋ウォールキック関数
+def try_rotate(mino_x, mino_y, cells, board, ROWS, COLS):
+    rotated = rotate_cw(cells)
+    for dx, dy in [(0, 0), (-1, 0), (1, 0)]:
+        if can_move(mino_x + dx, mino_y + dy, rotated, board, ROWS, COLS):
+            return mino_x + dx, mino_y + dy, rotated
+    # どれもダメなら回転失敗（元のまま）
+    return mino_x, mino_y, cells
+
+
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Tetris")
@@ -100,9 +109,9 @@ while running:
                 if can_move(mino_x + 1, mino_y, mino_cells, board, ROWS, COLS):
                     mino_x += 1
             elif event.key == pygame.K_UP:
-                rotated = rotate_cw(mino_cells)
-                if can_move(mino_x, mino_y, rotated, board, ROWS, COLS):
-                    mino_cells = rotated
+                mino_x, mino_y, mino_cells = try_rotate(
+                    mino_x, mino_y, mino_cells, board, ROWS, COLS
+                )
 
     # --- ② 時間更新（dt） ---
     dt = clock.tick(FPS)  # 前フレームからの経過ms

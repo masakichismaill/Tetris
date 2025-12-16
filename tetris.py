@@ -1,4 +1,5 @@
 import pygame
+import random
 
 # --- 初期設定 ---
 ROWS, COLS = 20, 10
@@ -9,10 +10,16 @@ WIDTH = COLS * CELL + MARGIN * 2
 HEIGHT = ROWS * CELL + MARGIN * 2
 FPS = 60
 
-# ミノの設定
-mino_x = COLS // 2
-mino_y = 0
-mino_cells = [(0, 0), (0, 1), (0, 2), (0, 3)]  # 縦のIミノ
+
+SHAPES = {
+    "I": [(0, 0), (0, 1), (0, 2), (0, 3)],
+    "O": [(0, 0), (1, 0), (0, 1), (1, 1)],
+    "T": [(-1, 0), (0, 0), (1, 0), (0, 1)],
+    "S": [(0, 0), (1, 0), (-1, 1), (0, 1)],
+    "Z": [(-1, 0), (0, 0), (0, 1), (1, 1)],
+    "J": [(-1, 0), (0, 0), (1, 0), (1, 1)],
+    "L": [(-1, 0), (0, 0), (1, 0), (-1, 1)],
+}
 
 # 落下の設定
 fall_interval = 500  # 500msごとに落下
@@ -53,10 +60,11 @@ def lock_to_board(mino_x, mino_y, cells, board):
 
 # ミノをリセットする関数。新規のミノの形成
 def spawn_mino():
+    kind = random.choice(list(SHAPES.keys()))
+    cells = SHAPES[kind]
     x = COLS // 2  # ミノの初期座標
     y = 0
-    cells = [(0, 0), (0, 1), (0, 2), (0, 3)]
-    return x, y, cells
+    return x, y, cells, kind
 
 
 # 行が埋まっているかの判定
@@ -93,7 +101,8 @@ clock = pygame.time.Clock()
 
 # 盤面データ
 board = [[0] * COLS for _ in range(ROWS)]
-
+# 最初のミノを生成
+mino_x, mino_y, mino_cells, mino_kind = spawn_mino()
 running = True
 while running:
     # --- ① イベント処理（入力） ---
@@ -109,9 +118,10 @@ while running:
                 if can_move(mino_x + 1, mino_y, mino_cells, board, ROWS, COLS):
                     mino_x += 1
             elif event.key == pygame.K_UP:
-                mino_x, mino_y, mino_cells = try_rotate(
-                    mino_x, mino_y, mino_cells, board, ROWS, COLS
-                )
+                if mino_kind != "O":
+                    mino_x, mino_y, mino_cells = try_rotate(
+                        mino_x, mino_y, mino_cells, board, ROWS, COLS
+                    )
 
     # --- ② 時間更新（dt） ---
     dt = clock.tick(FPS)  # 前フレームからの経過ms
@@ -126,7 +136,7 @@ while running:
             # 着地：盤面に固定
             lock_to_board(mino_x, mino_y, mino_cells, board)  # 固定
             board, _ = clear_lines(board, ROWS, COLS)  # 行消し
-            mino_x, mino_y, mino_cells = spawn_mino()  # 新しいミノを作る
+            mino_x, mino_y, mino_cells, mino_kind = spawn_mino()  # 新しいミノを作る
             if not can_move(mino_x, mino_y, mino_cells, board, ROWS, COLS):
                 running = False
         # 行けないなら止める（今回は固定まではしない）

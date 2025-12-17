@@ -93,6 +93,14 @@ def try_rotate(mino_x, mino_y, cells, board):
     return mino_x, mino_y, cells
 
 
+# ゴーストのY座標を計算する関数
+def get_ghost_y(mino_x, mino_y, cells, board):
+    gy = mino_y
+    while can_move(mino_x, gy + 1, cells, board):
+        gy += 1
+    return gy
+
+
 def add_score(score, cleared):
     if cleared == 1:
         return score + 100
@@ -221,6 +229,12 @@ while running:
             if board[r][c] != 0:
                 pygame.draw.rect(screen, COLORS[board[r][c]], rect)
             pygame.draw.rect(screen, (40, 40, 40), rect, 1)
+    ghost_y = get_ghost_y(mino_x, mino_y, mino_cells, board)
+    for dx, dy in mino_cells:
+        x = MARGIN + (mino_x + dx) * CELL
+        y = MARGIN + (ghost_y + dy) * CELL
+        rect = pygame.Rect(x, y, CELL, CELL)
+        pygame.draw.rect(screen, COLORS[mino_kind], rect, 2)
 
     # 落下中ミノ
     for dx, dy in mino_cells:

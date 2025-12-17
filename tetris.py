@@ -20,9 +20,20 @@ SHAPES = {
     "J": [(-1, 0), (0, 0), (1, 0), (1, 1)],
     "L": [(-1, 0), (0, 0), (1, 0), (-1, 1)],
 }
+COLORS = {
+    "I": (0, 200, 200),
+    "O": (200, 200, 0),
+    "T": (180, 0, 180),
+    "S": (0, 200, 0),
+    "Z": (200, 0, 0),
+    "J": (0, 0, 200),
+    "L": (255, 140, 0),
+}
 
 # 落下の設定
-fall_interval = 500  # 500msごとに落下
+normal_interval = 500  # 通常落下
+soft_interval = 50  # ↓押下中
+fall_interval = normal_interval
 fall_timer = 0  # 溜まった時間
 
 
@@ -51,11 +62,11 @@ def rotate_cw(cells):
 
 
 # 固定する関数
-def lock_to_board(mino_x, mino_y, cells, board):
+def lock_to_board(mino_x, mino_y, cells, board, mino_kind):
     for dx, dy in cells:
         x = mino_x + dx
         y = mino_y + dy
-        board[y][x] = 1  # board[y][x] = 1 はそこにブロックがあるという意味
+        board[y][x] = mino_kind
 
 
 # ミノをリセットする関数。新規のミノの形成
@@ -122,6 +133,11 @@ while running:
                     mino_x, mino_y, mino_cells = try_rotate(
                         mino_x, mino_y, mino_cells, board, ROWS, COLS
                     )
+            elif event.key == pygame.K_DOWN:
+                fall_interval = soft_interval
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_DOWN:
+                fall_interval = normal_interval
 
     # --- ② 時間更新（dt） ---
     dt = clock.tick(FPS)  # 前フレームからの経過ms
@@ -134,7 +150,7 @@ while running:
             mino_y += 1
         else:
             # 着地：盤面に固定
-            lock_to_board(mino_x, mino_y, mino_cells, board)  # 固定
+            lock_to_board(mino_x, mino_y, mino_cells, board, mino_kind)  # 固定
             board, _ = clear_lines(board, ROWS, COLS)  # 行消し
             mino_x, mino_y, mino_cells, mino_kind = spawn_mino()  # 新しいミノを作る
             if not can_move(mino_x, mino_y, mino_cells, board, ROWS, COLS):
@@ -152,8 +168,8 @@ while running:
             y = MARGIN + r * CELL
             rect = pygame.Rect(x, y, CELL, CELL)
             # 固定ブロックがあれば塗る
-            if board[r][c] == 1:
-                pygame.draw.rect(screen, (200, 200, 200), rect)
+            if board[r][c] != 0:
+                pygame.draw.rect(screen, COLORS[board[r][c]], rect)
             pygame.draw.rect(screen, (40, 40, 40), rect, 1)
 
     # ミノ
@@ -161,7 +177,7 @@ while running:
         x = MARGIN + (mino_x + dx) * CELL
         y = MARGIN + (mino_y + dy) * CELL
         rect = pygame.Rect(x, y, CELL, CELL)
-        pygame.draw.rect(screen, (0, 200, 200), rect)
+        pygame.draw.rect(screen, COLORS[mino_kind], rect)
 
     pygame.display.flip()
 
